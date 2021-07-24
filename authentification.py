@@ -24,11 +24,10 @@
 
 import secrets
 
-from fastapi import Depends, FastAPI, HTTPException, status 
+from fastapi import Depends, HTTPException, status 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 
-api = FastAPI()
 security = HTTPBasic()
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
@@ -43,19 +42,20 @@ def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials.username
 
 
-@api.get("/users/me")
-#def authenticate_user(credentials: HTTPBasicCredentials = Depends(get_current_username)):
-def authenticate_user(username: str = Depends(get_current_username)):
-    return {
-                "username": username,
-                #"username": credentials.username,
-                #"password": credentials.password
-    }
+
+
+#@api.get("/users/me")
+#def authenticate_user(username: str = Depends(get_current_username)):
+#    return {
+#                "username": username,
+#                #"username": credentials.username,
+#                #"password": credentials.password
+#    }'''
 
 
 
-
+'''
 if __name__ == '__main__': 
     import uvicorn
     uvicorn.run(api, host="localhost", port=8100)
-
+'''
