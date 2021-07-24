@@ -14,3 +14,10 @@ api = FastAPI(
 @api.get('/hello')
 async def hello():
     return {'data': 'w3laykom el Hello'}
+
+
+
+
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=8100)
