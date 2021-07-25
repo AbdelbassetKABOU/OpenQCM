@@ -27,10 +27,38 @@ import secrets
 from fastapi import Depends, HTTPException, status 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
+autorized = {
+                "alice": "wonderland",
+                "bob": "builder",
+                "clementine": "mandarine",
+                "admin": "admin"
+}
 
 security = HTTPBasic()
 
+def is_autorized(credentials: HTTPBasicCredentials = Depends(security)):
+    for user, passwd in autorized.items():
+       if secrets.compare_digest(credentials.username, user):
+           if secrets.compare_digest(credentials.password, passwd):
+               return True
+    return False
+
+
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    if not (is_autorized(credentials)):
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = "Incorrect email or password",
+            headers = {"WWW-Authenticate" : "Basic"},
+        )
+    return credentials.username
+
+
+
+
+
+
+def get_current_username_I(credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, "coucou")
     correct_password = secrets.compare_digest(credentials.password, "coucou")
     if not (correct_username and correct_password):
