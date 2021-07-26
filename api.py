@@ -32,11 +32,12 @@
 
      -> Authentification sys
      -> 
-
+        Base Model, 
 
 '''
 
-from  fastapi import FastAPI, Depends
+from  fastapi import FastAPI, Depends, Query, HTTPException, status
+from typing import List, Optional
 import database as db
 import authentification as auth
 import qcm
@@ -49,6 +50,7 @@ api = FastAPI(
       )
 # --------------------------------------------------------------------------------------------
 
+var = "Hola"
 
 # ----------------
 @api.get('/hello')
@@ -84,9 +86,102 @@ async def authenticate_user(username: str = Depends(auth.get_current_username)):
 
 
 
+
 # -------------------
-@api.get("/questions/{use}/{subject}/{number}")
-async def get_qcm(use, subjects, number):
+@api.get("/subjects")
+async def get_subjects():
+    available_subjects = db.get_subjects()
+    return available_subjects
+# TO BE CONTINUED
+# ---------------------
+
+
+
+# -------------------
+@api.get("/uses")
+async def get_uses():
+    available_uses = db.get_uses()
+    return available_uses
+# TO BE CONTINUED
+# ---------------------
+
+#@api.get("/questions/subjects")
+#async def read_subjects(subjects: Optional[List[str]] = Query(None)):
+#    query_subjects = {"subjects": subjects}
+#    return query_subjects
+
+
+
+# More details on
+# https://fastapi.tiangolo.com/tutorial/query-params-str-validations/#query-parameter-list-multiple-values-with-defaults
+# Python fastapi.Query() Examples -->
+# https://www.programcreek.com/python/example/113514/fastapi.Query
+@api.get("/qcm/")
+async def get_qcm(
+         # number: int,
+          number: int = Query(
+                  5,
+                  title = "Number (Nombre de questions)",
+                  description = "Please choose among [5, 10, 20]",
+                  #max_length = 1,
+                  #min_length = 1,
+              ), 
+         # use: str,
+         # use: Optional[List[str]] = Query(
+           use:  str = Query(
+                 #db.get_uses(),
+                 "Test de positionnement",
+                 title = "Use (type de questions)",
+                 description = f"Available Cases from database, <br> \
+                                 {db.get_uses()}",
+                 #max_length = 2,
+                 #min_length = 1,
+             ), 
+         # number: List[str] = Query(
+         #         ['5', '10', '20'],
+         #         title = "number of questions",
+         #         description = "Available scenarios",
+         #         max_length = 1,
+         #         min_length = 1,
+         #     ), 
+          #number: int, 
+          subjects: 
+              Optional[List[str]] = Query(
+                  db.get_subjects(),
+                  title = "Subject (Catégories de questions)",
+                  description = "Available subjects are provided bellow. <br>\
+                                 Choose the one to delete using <h1> - </h1>",
+                  #max_length = 3,
+              )
+    ):
+    #async def get_qcm(use: str, number: int, subjects: Optional[List[str]] = Query(None)):
+    #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
+    #if type(subjects) == str : subjects = [subjects]
+
+    if not (qcm.is_validated(number, use, subjects)):
+        raise HTTPException(
+            status_code = 422,
+            detail = "Incorrect (Unprocessable) parameter, please check again",
+            headers={"X-Error": "There goes my error"},
+        )
+         #status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
+
+    results = qcm.get_qcm_random(use, subjects, int(number))
+    #results = qcm.get_qcm(use, subjects, int(number))
+    return {
+                "use": use,
+                "subject": subjects,
+                "number": int(number),
+                "results": results
+            }
+
+# ----------------------------------------------------------------------------------------
+
+
+
+# -------------------
+#@api.get("/questions/{use}/{subjects}/{number}")
+async def get_qcm_simple(use, subjects, number):
     #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
     if type(subjects) == str : subjects = [subjects]
     #results = qcm.get_qcm_random(use, subjects, int(number))
