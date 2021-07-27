@@ -27,34 +27,57 @@ import secrets
 from fastapi import Depends, HTTPException, status 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-autorized = {
+identified = {
                 "alice": "wonderland",
                 "bob": "builder",
                 "clementine": "mandarine",
                 "admin": "admin"
 }
 
+
+authorized = {
+                "alice": ["read_subjects", "read_uses"],
+                "bob": ["read_subjects", "read_uses"],
+                "clementine": ["read_subjects", "read_uses"],
+                "admin": ["read_subjects", "read_uses", "add_question"]
+}
+
 security = HTTPBasic()
 
-def is_autorized(credentials: HTTPBasicCredentials = Depends(security)):
-    for user, passwd in autorized.items():
+def is_identified(credentials: HTTPBasicCredentials = Depends(security)):
+    for user, passwd in identified.items():
        if secrets.compare_digest(credentials.username, user):
            if secrets.compare_digest(credentials.password, passwd):
                return True
     return False
 
 
+def is_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    
+    if not secrets.compare_digest(credentials.username, "admin"):
+        #return False
+        raise HTTPException(
+            status_code = status.HTTP_403_FORBIDDEN,
+            detail = "Access to the requested resource is forbidden for the current user",
+            headers = {"WWW-Authenticate" : "Basic"},
+        )
+    else :
+        if not is_identified(credentials) : 
+            raise HTTPException(
+                status_code = status.HTTP_401_UNAUTHORIZED,
+                detail = "Incorrect email or password",
+                headers = {"WWW-Authenticate" : "Basic"},
+            )
+    return credentials.username
+
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
-    if not (is_autorized(credentials)):
+    if not (is_identified(credentials)):
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED,
             detail = "Incorrect email or password",
             headers = {"WWW-Authenticate" : "Basic"},
         )
     return credentials.username
-
-
-
 
 
 
