@@ -1,5 +1,6 @@
 from  fastapi import FastAPI
 import database as db
+import os
 
 
 api = FastAPI(
@@ -8,9 +9,9 @@ api = FastAPI(
                  version='0.1'
       )
 
-@api.get('/hello')
-async def hello():
-    return {'data': 'w3laykom el Hello'}
+#@api.get('/hello')
+#async def hello():
+#    return {'data': 'w3laykom el Hello'}
 
 
 import pandas as pd
@@ -76,9 +77,54 @@ class Request (BaseModel):
     #    print(r.headers['content-type'])
     #    print(r.encoding)
 
+def export_df(df, file_name):
+    if os.path.isfile(file_name):
+        os.remove(file_name)
+    df.to_csv(file_name)
+    return True 
+
+
+def prepare_dataset(file_name: str):
+    df = pd.read_csv(file_name)
+    if 'Unnamed: 0.1' not in df.columns : 
+        return True
+    else :
+        df.rename(columns={'Unnamed: 0':'index'}, inplace=True)
+        df.drop('Unnamed: 0.1', axis=1, inplace=True)
+        export_state = export_df(df, file_name)
+        return export_state
+
+def initialise_df() -> bool:
+    df = pd.read_csv('questions.csv')
+    return df
+
+def get_df():
+    try:
+        df
+    except NameError:
+        prepare_dataset('questions.csv')
+        df = initialise_df()
+    return df
+
+def add_question(question: str, subject: str, use: str, correct: str,\
+                 responseA: str, responseB: str, responseC: str, responseD: str) -> bool:
+    df = get_df()
+    new_row = {'question':question, 'subject':subject, 'use':use, 'correct':correct,\
+               'responseA': responseA, 'responseB': responseB, \
+               'responseC': responseC, 'responseD': responseD, 'remark':''}
+    df = df.append(new_row, ignore_index=True)
+    export_state = export_df(df, 'questions.csv')
+
+    #if os.path.isfile('./questions.csv'):
+    #    os.remove('./questions.csv')
+    #df.to_csv('questions.csv')
+    #df.to_csv('questions.csv')
+
+    return True
+
 
 def get_uses():
-    df = pd.read_csv('questions.csv')
+    df = get_df()
     return np.unique(df.use.values).tolist()
 
 def get_subjects():

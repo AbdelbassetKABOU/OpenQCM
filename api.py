@@ -179,6 +179,34 @@ async def get_qcm(
 
 
 
+
+# More details on
+@api.get("/qcm/add/")
+async def add_qcm(
+         question: str, subject: str, correct: str, use: str,\
+         responseA: str, responseB: str, responseC: str, responseD: str ) -> bool:
+    #async def get_qcm(use: str, number: int, subjects: Optional[List[str]] = Query(None)):
+    #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
+    #if type(subjects) == str : subjects = [subjects]
+    request = qcm.add_question(question, subject, correct, use, \
+                              responseA, responseB, responseC, responseD)
+    if request :        
+        return {
+                   'response_code' : 0,
+                   'results' : {
+                               'question':question, 'subject':subject, 'correct':correct,
+                               'use':use, 'responseA': responseA, 'responseB': responseB,
+                               'responseC': responseC, 'responseD': responseD
+                   }
+         }
+
+# ----------------------------------------------------------------------------------------
+
+
+
+
+
+
 # -------------------
 #@api.get("/questions/{use}/{subjects}/{number}")
 async def get_qcm_simple(use, subjects, number):

@@ -4,7 +4,11 @@ import random
 #np.random.seed(0)
 #df = pd.DataFrame(np.random.randn(5,3), columns=list('ABC'))
 
-
+def add_question(question: str, subject: str, use: str, correct: str, \
+                 responseA: str, responseB: str, responseC: str, responseD: str) -> bool:
+    request = db.add_question(question, subject, use, correct, \
+                              responseA, responseB, responseC, responseD)
+    return request    
 
 def get_qcm(use: str, subjects: list, nbr: int) -> list:
     '''
