@@ -49,7 +49,8 @@ api = FastAPI(
 @api.get('/status')
 async def status():
     return {
-               'status': 1
+        'response_code':0,
+        'results': 1
     } # ------------------------
 # ----
 
@@ -59,21 +60,38 @@ async def status():
 # ------------------------
 @api.get("/users/me")
 async def authenticate_user(username: str = Depends(auth.get_current_username)):
+
     return {
-                "username": username,
+        'response_code':0,
+        'results': username
     } #-----------------------------
 # ---
 
 
 # ----------------------------------------
-# List available subjects in the database
+# List available uses in the database
 # --------------------------------------------
 @api.get("/uses")
-async def get_uses():
+async def get_uses(username: str = Depends(auth.get_current_username)):
     available_uses = db.get_uses()
-    return available_uses
+    return {
+        'response_code':0,
+        'results': available_uses
+    }
 # ---------------------
 
+
+# ----------------------------------------
+# List available subjects in the database
+# --------------------------------------------
+@api.get("/subjects")
+async def get_subjects(username: str = Depends(auth.get_current_username)):
+    available_subjects = db.get_subjects()
+    return {
+        'response_code':0,
+        'results': available_subjects
+    }
+# ---------------------
 
 
 # ----------------------------
@@ -125,11 +143,15 @@ async def get_qcm(
 
     results = qcm.get_qcm_random(use, subjects, int(number))
     return {
-                "use": use,
-                "subject": subjects,
-                "number": int(number),
-                "results": results
-            }
+        'response_code':0,
+        'results':{
+                      "use": use,
+                      "subject": subjects,
+                      "number": int(number),
+                      "results": results
+        }
+            
+    }
     # -----------------
     # - More details on
     # https://fastapi.tiangolo.com/tutorial/query-params-str-validations/#query-
@@ -181,10 +203,13 @@ async def get_qcm_simple(use, subjects, number):
     #results = qcm.get_qcm_random(use, subjects, int(number))
     results = qcm.get_qcm(use, subjects, int(number))
     return {
-                "use": use,
-                "subject": subjects,
-                "number": number,
-                "results": results
+        'response_code' : 0,
+        'results': {
+                       "use": use,
+                       "subject": subjects,
+                       "number": number,
+                       "results": results
+         }
     } # --------------------------
 #------
 

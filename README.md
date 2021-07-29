@@ -65,26 +65,30 @@ This returns a JSON object with the results in an array you can iterate over.
 
 ``` 
 {
-  "use": "Test de positionnement",
-  "subject": [
-    "Data Science",
-    "Docker",
-    "Machine Learning",
-    "Systèmes distribués"
-  ],
-  "number": 10,
-  "results": [
-    "Docker permet de persister des changements",
-    "Dans Hadoop, les combiners permettent",
-    "Des containers Docker peuvent communiquer entre eux grâce à",
-    "Docker est utilisé",
-    "Hive permet",
-    "Quels sont les trois éléments constitutifs de Hadoop ?",
-    "Le théorème CAP oppose",
-    "Docker-compose est ",
-    "Spark se différencie de Hadoop par",
-    "Dans Hadoop, les partitioners permettent"
-  ]
+"response_code": 0,
+"results": {
+"use": "Test de positionnement",
+"subject": [
+"Docker",
+"Machine Learning",
+"Systèmes distribués",
+"Data Science"
+],
+"number": 10,
+"results": [
+"Le théorème CAP oppose",
+"Dans Hadoop, les partitioners permettent",
+"Hive permet",
+"Spark se différencie de Hadoop par",
+"Quels sont les trois éléments constitutifs de Hadoop ?",
+"Lors de l'étape de Map d'un wordcount appliqué à la phrase \"cette phrase
+est une phrase\", les valeurs émises sont:",
+"Docker permet de persister des changements",
+"DockerHub est",
+"Des containers Docker peuvent communiquer entre eux grâce à",
+"Docker est utilisé"
+]
+}
 }
 ```
 
