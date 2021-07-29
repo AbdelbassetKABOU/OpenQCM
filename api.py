@@ -1,40 +1,29 @@
+
+#
+#   /===============\
+#  |     api.py      |
+#   \===============/
+#
+# This is the tip of the icebirg for our proposed architecture. 
+# The current module, along with data access/management, authentification 
+# and logic modules, constitute the basic components of an n-tier architecture.
+# This architecture (referred to as multi-tier arch also) is an architectural 
+# pattern in which presentation, application processing (logic) and data 
+# management functions are separated [1]. More details are provided later.
+#
+# This module 
+#
+# The current module consists on a set of functions accessible via a restful API. 
+# The implementation is based mainly on FastAPI [2], the new emerged frameword 
+# that is causing a considerable amount of buzz these days. 
+#
+# AbdelbasetKABOU
+#
+# [1] https://fastapi.tiangolo.com/
+# [2] https://en.wikipedia.org/wiki/Multitier_architecture
+
 #
 
-
-'''
-  /----------------------/
- /   #  Description     /
-/----------------------/
-
-      o L'utilisateur doit pouvoir choisir un type de test (use) ainsi qu'une ou plusieurs 
-        catégories (subject). 
-      o L'application peut produire des QCMs de 5, 10 ou 20 questions. 
-      o L'API doit donc être en mesure de retourner ce nombre de questions. 
-      o Les questions doivent être retournées dans un ordre aléatoire: ainsi, une requête 
-        avec les mêmes paramètres pourra retourner des questions différentes.
-
-      o Les utilisateurs devant avoir créé un compte, il faut que nous soyons en mesure de 
-        vérifier leurs identifiants. Pour l'instant l'API utilise une authentification basique, 
-        à base de nom d'utilisateur et de mot de passe: la chaîne de caractères contenant 
-        Basic username:password devra être passée dans l'en-tête Authorization (en théorie, 
-        cette chaîne de caractère devrait être encodée mais pour simplifier l'exercice, 
-        on peut choisir de ne pas l'encoder)
-
-
-      o L'API devra aussi implémenter un point de terminaison pour vérifier que l'API est bien 
-        fonctionnelle. 
-      o Une autre fonctionnalité doit pouvoir permettre à un utilisateur admin dont le mot 
-        de passe est 4dm1N de <<créer>> une nouvelle question.
-
-  /------------------/
- /   # ToDo List :  /
-/------------------/
-
-     -> Authentification sys
-     -> 
-        Base Model, 
-
-'''
 
 from  fastapi import FastAPI, Depends, Query, HTTPException, status
 from typing import List, Optional
@@ -44,81 +33,64 @@ import qcm
 
 # -------------
 api = FastAPI(
-                 title = 'Quiz API',
-                 description='An API that interact with a DB and return a set of question',
+                 title = 'OpenQCM API',
+                 description=' A simple HTTP RESTful API interecting with a database and \
+                               returning a set of Multiple Choice Question (MCQ)',
                  version='0.1'
       )
 # --------------------------------------------------------------------------------------------
 
-var = "Hola"
-
-# ----------------
-@api.get('/hello')
-async def hello(username: str = Depends(auth.get_current_username)):
-    return {
-               'data': 'w3laykom el Hello',
-               'user': username
-    }
-# ------------------------------------------
 
 
 
-# ----------------
+# --------------------------------------
+# - Verify that the API is functional.
+# ------------------------
 @api.get('/status')
 async def status():
     return {
                'status': 1
-    }
-# ------------------------------------------
+    } # ------------------------
+# ----
 
 
-
-# -------------------
+# ------------------------
+# - Get the current user :
+# ------------------------
 @api.get("/users/me")
-#def authenticate_user(credentials: HTTPBasicCredentials = Depends(get_current_username)):
 async def authenticate_user(username: str = Depends(auth.get_current_username)):
     return {
                 "username": username,
-                #"username": credentials.username,
-                #"password": credentials.password
-    }
-# ----------------------------------------------------------------------------------------
+    } #-----------------------------
+# ---
 
 
-
-
-# -------------------
-@api.get("/subjects")
-async def get_subjects():
-    available_subjects = db.get_subjects()
-    return available_subjects
-# TO BE CONTINUED
-# ---------------------
-
-
-
-# -------------------
+# ----------------------------------------
+# List available subjects in the database
+# --------------------------------------------
 @api.get("/uses")
 async def get_uses():
     available_uses = db.get_uses()
     return available_uses
-# TO BE CONTINUED
 # ---------------------
 
-#@api.get("/questions/subjects")
-#async def read_subjects(subjects: Optional[List[str]] = Query(None)):
-#    query_subjects = {"subjects": subjects}
-#    return query_subjects
 
 
-
-# More details on
-# https://fastapi.tiangolo.com/tutorial/query-params-str-validations/#query-parameter-list-multiple-values-with-defaults
-# Python fastapi.Query() Examples -->
-# https://www.programcreek.com/python/example/113514/fastapi.Query
+# ----------------------------
+# - Get a MCQ from database :
+# ----------------------------
+#
+#    - Containing 5,10 or 20 questions 
+#    - Related to one or more subject
+#      (category)
+#    - Related to one use (e.g. Test de 
+#      positionnement, Test de validation, etc)
+#
+#    + It include a random rendering making results
+#       differ each time
+# -----------------------------------------------
 @api.get("/qcm/")
 async def get_qcm(
-         # number: int,
           number: int = Query(
                   5,
                   title = "Number (Nombre de questions)",
@@ -126,8 +98,6 @@ async def get_qcm(
                   #max_length = 1,
                   #min_length = 1,
               ), 
-         # use: str,
-         # use: Optional[List[str]] = Query(
            use:  str = Query(
                  #db.get_uses(),
                  "Test de positionnement",
@@ -137,14 +107,6 @@ async def get_qcm(
                  #max_length = 2,
                  #min_length = 1,
              ), 
-         # number: List[str] = Query(
-         #         ['5', '10', '20'],
-         #         title = "number of questions",
-         #         description = "Available scenarios",
-         #         max_length = 1,
-         #         min_length = 1,
-         #     ), 
-          #number: int, 
           subjects: 
               Optional[List[str]] = Query(
                   db.get_subjects(),
@@ -154,41 +116,43 @@ async def get_qcm(
                   #max_length = 3,
               )
     ):
-    #async def get_qcm(use: str, number: int, subjects: Optional[List[str]] = Query(None)):
-    #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
-    #if type(subjects) == str : subjects = [subjects]
-
     if not (qcm.is_validated(number, use, subjects)):
         raise HTTPException(
             status_code = 422,
             detail = "Incorrect (Unprocessable) parameter, please check again",
             headers={"X-Error": "There goes my error"},
         )
-         #status_code = status.HTTP_422_UNPROCESSABLE_ENTITY,
 
     results = qcm.get_qcm_random(use, subjects, int(number))
-    #results = qcm.get_qcm(use, subjects, int(number))
     return {
                 "use": use,
                 "subject": subjects,
                 "number": int(number),
                 "results": results
             }
+    # -----------------
+    # - More details on
+    # https://fastapi.tiangolo.com/tutorial/query-params-str-validations/#query-
+    #  parameter-list-multiple-values-with-defaults
+    # - Python fastapi.Query() Examples -->
+    # https://www.programcreek.com/python/example/113514/fastapi.Query
+    # -----------------------------------------------------------------
 
-# ----------------------------------------------------------------------------------------
 
 
 
-
-# More details on
+# --------------------------
+# - Create a new question 
+# -------------------------
+#
+# (requires admin privileges). 
+#
+# -----------------------------------------------
 @api.post("/qcm/add/")
 async def add_qcm(
          question: str, subject: str, correct: str, use: str,\
          responseA: str, responseB: str, responseC: str, responseD: str, \
          username: str = Depends(auth.is_admin)) :
-    #async def get_qcm(use: str, number: int, subjects: Optional[List[str]] = Query(None)):
-    #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
-    #if type(subjects) == str : subjects = [subjects]
     request = qcm.add_question(question, subject, correct, use, \
                               responseA, responseB, responseC, responseD)
     if request :        
@@ -200,17 +164,17 @@ async def add_qcm(
                                'use':use, 'responseA': responseA, 'responseB': responseB,
                                'responseC': responseC, 'responseD': responseD
                    }
-         }
-
-# ----------------------------------------------------------------------------------------
-
+         } # --------------------------------------------
+# ----------
 
 
 
 
-
-# -------------------
-#@api.get("/questions/{use}/{subjects}/{number}")
+# ----------------------------
+# - Get a MCQ from database :
+#    - The same thing as the previous route, however
+#      it's now consist on simple (not random) request
+# -----------------------------------------------
 async def get_qcm_simple(use, subjects, number):
     #results = qcm.get_qcm_random('Test de validation', 'BDD', 11)
     if type(subjects) == str : subjects = [subjects]
@@ -221,8 +185,9 @@ async def get_qcm_simple(use, subjects, number):
                 "subject": subjects,
                 "number": number,
                 "results": results
-    }
-# ----------------------------------------------------------------------------------------
+    } # --------------------------
+#------
+
 
 '''
 if __name__ == '__main__':
